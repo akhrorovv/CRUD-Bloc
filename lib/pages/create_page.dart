@@ -1,8 +1,8 @@
+import 'package:crud/bloc/create/create_event.dart';
 import 'package:flutter/material.dart';
-import '../models/post_model.dart';
-import '../models/post_res_model.dart';
-import '../services/http_service.dart';
-import '../services/log_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/create/create_bloc.dart';
+import '../bloc/create/create_state.dart';
 
 class CreatePage extends StatefulWidget {
   const CreatePage({super.key});
@@ -12,22 +12,23 @@ class CreatePage extends StatefulWidget {
 }
 
 class _CreatePageState extends State<CreatePage> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _bodyController = TextEditingController();
+  late CreateBloc createBloc;
 
-  createPost() async{
-    String title = _titleController.text.toString().trim();
-    String body = _bodyController.text.toString().trim();
-    Post post = Post(userId: 1,title: title, body: body);
-
-    var response = await Network.POST(Network.API_POST_CREATE, Network.paramsCreate(post));
-    LogService.d(response!);
-    PostRes postRes = Network.parsePostRes(response);
-    backToFinish();
+  backToFinish() {
+    Navigator.of(context).pop(true);
   }
 
-  backToFinish(){
-    Navigator.of(context).pop(true);
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    createBloc = context.read<CreateBloc>();
+
+    createBloc.stream.listen((state) {
+      if (state is CreatedPostState) {
+        backToFinish();
+      }
+    });
   }
 
   @override
@@ -44,30 +45,29 @@ class _CreatePageState extends State<CreatePage> {
           children: [
             Container(
               child: TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                    hintText: "Title"
-                ),
+                controller: createBloc.titleController,
+                decoration: const InputDecoration(hintText: "Title"),
               ),
             ),
             Container(
               child: TextField(
-                controller: _bodyController,
-                decoration: const InputDecoration(
-                    hintText: "Body"
-                ),
+                controller: createBloc.bodyController,
+                decoration: const InputDecoration(hintText: "Body"),
               ),
             ),
             Container(
-                margin: const EdgeInsets.only(top: 10),
-                width: double.infinity,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  onPressed: () {
-                    createPost();
-                  },
-                  child: const Text("Create"),
-                )
+              margin: const EdgeInsets.only(top: 10),
+              width: double.infinity,
+              child: MaterialButton(
+                color: Colors.blue,
+                onPressed: () {
+                  String title = createBloc.titleController.text.toString().trim();
+                  String body = createBloc.bodyController.text.toString().trim();
+
+                  createBloc.add(CreatePostEvent(title, body));
+                },
+                child: const Text("Create"),
+              ),
             ),
           ],
         ),

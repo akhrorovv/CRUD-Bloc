@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
+import 'package:crud/bloc/create/create_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/post_model.dart';
 import '../../pages/create_page.dart';
@@ -53,7 +55,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     bool result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (BuildContext context) {
-          return const CreatePage();
+          return BlocProvider(
+            create: (context) => CreateBloc(),
+            child: const CreatePage(),
+          );
         },
       ),
     );
